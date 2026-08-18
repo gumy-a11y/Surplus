@@ -19,7 +19,7 @@ export default async function AppLayout({
     redirect("/login");
   }
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("pseudo")
     .eq("id", user.id)
@@ -56,14 +56,28 @@ export default async function AppLayout({
             <b className="mb-2 block font-display text-2xl tracking-wide text-ink">
               Profil introuvable
             </b>
-            Ton compte existe mais aucune ligne <code>profiles</code> ne lui
-            correspond. Vérifie que{" "}
-            <code>supabase/profile_trigger.sql</code> a bien été exécuté dans
-            l&apos;éditeur SQL Supabase, puis{" "}
-            <Link href="/login" className="text-orange underline">
-              reconnecte-toi
-            </Link>
-            .
+            <p className="mb-3">
+              Ton compte existe mais aucune ligne <code>profiles</code> ne lui
+              correspond (ou n&apos;a pas pu être lue). Vérifie que{" "}
+              <code>supabase/profile_trigger.sql</code> a bien été exécuté
+              dans l&apos;éditeur SQL Supabase.
+            </p>
+            <p className="mb-1 font-mono text-[11px] text-concrete">
+              user id : {user.id}
+            </p>
+            {profileError && (
+              <p className="mb-3 font-mono text-[11px] text-orange">
+                erreur Supabase : [{profileError.code}]{" "}
+                {profileError.message}
+              </p>
+            )}
+            <div className="mt-4 flex items-center gap-3">
+              <Link href="/login" className="text-orange underline">
+                reconnecte-toi
+              </Link>
+              <span className="text-concrete">·</span>
+              <LogoutButton />
+            </div>
           </div>
         )}
       </div>
