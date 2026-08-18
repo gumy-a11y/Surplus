@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+:root {
+  --blueprint: #0f2545;
+  --blueprint-deep: #0a1b33;
+  --line: rgba(245, 243, 238, 0.09);
+  --ink: #f5f3ee;
+  --ink-dim: #a9b4c4;
+  --concrete: #8d99ae;
+  --orange: #ff6b35;
+  --orange-dim: #c94e23;
+  --green: #4caf7d;
+  --yellow: #ffc845;
+  --card-bg: #142c52;
+  --card-border: rgba(245, 243, 238, 0.14);
+}
+
+@theme inline {
+  --color-blueprint: var(--blueprint);
+  --color-blueprint-deep: var(--blueprint-deep);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-dim: var(--ink-dim);
+  --color-concrete: var(--concrete);
+  --color-orange: var(--orange);
+  --color-orange-dim: var(--orange-dim);
+  --color-green: var(--green);
+  --color-yellow: var(--yellow);
+  --color-card-bg: var(--card-bg);
+  --color-card-border: var(--card-border);
+  --font-display: var(--font-bebas-neue);
+  --font-mono: var(--font-ibm-plex-mono);
+  --font-sans: var(--font-inter);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      var(--line) 0px,
+      var(--line) 1px,
+      transparent 1px,
+      transparent 32px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      var(--line) 0px,
+      var(--line) 1px,
+      transparent 1px,
+      transparent 32px
+    ),
+    var(--blueprint);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* Épingle décorative en haut des cartes produit, façon planche à dessin */
+.card-pin::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 16px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--blueprint);
+  border: 1px solid var(--card-border);
+}
