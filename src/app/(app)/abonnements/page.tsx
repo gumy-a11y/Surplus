@@ -25,19 +25,17 @@ export default async function AbonnementsPage() {
   });
   const followedIds = new Set((subs ?? []).map((s) => s.followed_id));
 
-  const owners = (profiles ?? [])
-    .filter((p) => counts.has(p.id))
-    .map((p) => ({
-      id: p.id,
-      pseudo: p.pseudo,
-      count: counts.get(p.id) ?? 0,
-      following: followedIds.has(p.id),
-    }));
+  const owners = (profiles ?? []).map((p) => ({
+    id: p.id,
+    pseudo: p.pseudo,
+    count: counts.get(p.id) ?? 0,
+    following: followedIds.has(p.id),
+  }));
 
   return (
     <div>
       <p className="mb-3.5 font-mono text-[11px] tracking-[0.18em] text-orange uppercase">
-        Personnes ayant publié des objets
+        Personnes inscrites
       </p>
       {owners.length === 0 ? (
         <EmptyState title="Personne pour l'instant">
