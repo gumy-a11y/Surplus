@@ -35,11 +35,12 @@ Vercel**.
 
 ## 2. Exécuter le SQL
 
-Dans le **SQL Editor** de Supabase, exécute ces 3 fichiers **dans cet ordre exact** :
+Dans le **SQL Editor** de Supabase, exécute ces 4 fichiers **dans cet ordre exact** :
 
 1. `supabase/schema.sql` — le schéma que tu as fourni (tables, catégories, RLS). Non modifié.
 2. `supabase/profile_trigger.sql` — **ajout nécessaire** : `schema.sql` ne contient pas de règle RLS permettant à un nouvel utilisateur de créer sa propre ligne dans `profiles`. Ce fichier ajoute un trigger qui crée automatiquement le profil (pseudo compris) dès l'inscription, sans toucher aux tables existantes. Signale-moi si tu préfères une autre approche.
 3. `supabase/storage_setup.sql` — **ajout nécessaire** : crée le bucket de stockage public `product-photos` (mentionné mais non créé par `schema.sql`, car un bucket n'est pas un objet SQL classique) et ses règles d'accès (lecture publique, écriture limitée à son propre dossier).
+4. `supabase/grants.sql` — **ajout nécessaire** : `schema.sql` active RLS et définit des policies, mais n'accorde pas les droits SQL de base (`GRANT`) sans lesquels Postgres refuse l'accès avant même d'évaluer ces policies. Sur un projet créé via l'éditeur de tables Supabase, ces droits sont posés automatiquement ; ils manquent quand les tables sont créées par SQL direct, comme ici. Sans ce fichier, l'app affiche `permission denied for table profiles` (ou une autre table) après connexion.
 
 ## 3. Authentification
 
