@@ -32,7 +32,12 @@ export function CatalogueView({ items }: { items: CatalogueItem[] }) {
     if (filterType !== "tous" && p.type !== filterType) return false;
     if (filterCat !== "toutes" && !p.categories.includes(filterCat))
       return false;
-    if (search.trim() && !p.title.toLowerCase().includes(search.toLowerCase()))
+    const query = search.trim().toLowerCase();
+    if (
+      query &&
+      !p.title.toLowerCase().includes(query) &&
+      !(p.description ?? "").toLowerCase().includes(query)
+    )
       return false;
     return true;
   });
