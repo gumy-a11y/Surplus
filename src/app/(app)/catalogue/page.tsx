@@ -33,8 +33,8 @@ export default async function CataloguePage() {
   if (followedIds.length === 0) {
     return (
       <EmptyState title="Aucun abonnement">
-        Va dans l&apos;onglet « Abonnements » pour suivre des proches et voir
-        leurs objets ici.
+        Va dans l&apos;onglet « Abonnements » pour t&apos;abonner à des
+        proches et voir leurs objets ici.
       </EmptyState>
     );
   }

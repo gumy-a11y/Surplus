@@ -86,7 +86,7 @@ export function FollowList({ owners }: { owners: Owner[] }) {
                     : "border-card-border bg-transparent text-ink-dim"
                 }`}
               >
-                {owner.following ? "Suivi ✓" : "Suivre"}
+                {owner.following ? "Abonné ✓" : "S'abonner"}
               </button>
             </div>
           ))}
