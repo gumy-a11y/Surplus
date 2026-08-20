@@ -108,6 +108,21 @@ export default function LoginPage() {
           </button>
         </div>
 
+        {mode === "signup" && (
+          <div className="mb-5 rounded-[2px] border border-yellow/40 bg-yellow/10 p-3.5 text-[12.5px] leading-relaxed text-ink-dim">
+            <p className="mb-1.5 font-mono text-[10.5px] tracking-wide text-yellow uppercase">
+              Quelques recommandations avant de vous inscrire
+            </p>
+            <p className="mb-1">
+              1) Vous n&apos;êtes pas dans l&apos;obligation d&apos;entrer une
+              adresse mail réelle : protégez vos données !
+            </p>
+            <p className="mb-0">
+              2) Choisissez un pseudo qui permette de vous identifier 😉
+            </p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           {mode === "signup" && (
             <div className="mb-4">
