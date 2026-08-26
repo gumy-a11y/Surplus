@@ -10,7 +10,7 @@ export default async function ComptePage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("pseudo, phone")
+    .select("pseudo, phone, location, arrondissement")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -20,6 +20,8 @@ export default async function ComptePage() {
       email={user.email ?? ""}
       pseudo={profile?.pseudo ?? ""}
       phone={profile?.phone ?? null}
+      location={profile?.location ?? null}
+      arrondissement={profile?.arrondissement ?? null}
     />
   );
 }

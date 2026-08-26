@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/toast";
+import { ARRONDISSEMENTS } from "@/types/database";
 
 function PencilIcon() {
   return (
@@ -32,11 +33,15 @@ export function AccountView({
   email,
   pseudo,
   phone,
+  location,
+  arrondissement,
 }: {
   userId: string;
   email: string;
   pseudo: string;
   phone: string | null;
+  location: string | null;
+  arrondissement: string | null;
 }) {
   const router = useRouter();
   const showToast = useToast();
@@ -44,6 +49,15 @@ export function AccountView({
   const [pseudoEditing, setPseudoEditing] = useState(false);
   const [pseudoDraft, setPseudoDraft] = useState(pseudo);
   const [pseudoSaving, setPseudoSaving] = useState(false);
+
+  const [locationEditing, setLocationEditing] = useState(false);
+  const [locationDraft, setLocationDraft] = useState(location ?? "");
+  const [arrondissementDraft, setArrondissementDraft] = useState(
+    arrondissement ?? ""
+  );
+  const [locationSaving, setLocationSaving] = useState(false);
+  const isParisDraft = locationDraft.trim().toLowerCase() === "paris";
+  const isParisSaved = (location ?? "").trim().toLowerCase() === "paris";
 
   const [phoneEditing, setPhoneEditing] = useState(false);
   const [phoneDraft, setPhoneDraft] = useState(phone ?? "");
@@ -75,6 +89,32 @@ export function AccountView({
     }
     showToast("Pseudo mis à jour");
     setPseudoEditing(false);
+    router.refresh();
+  }
+
+  async function saveLocation() {
+    if (!locationDraft.trim()) {
+      showToast("La localisation ne peut pas être vide");
+      return;
+    }
+    setLocationSaving(true);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        location: locationDraft.trim(),
+        arrondissement: isParisDraft && arrondissementDraft
+          ? arrondissementDraft
+          : null,
+      })
+      .eq("id", userId);
+    setLocationSaving(false);
+    if (error) {
+      showToast("Erreur : " + error.message);
+      return;
+    }
+    showToast("Localisation mise à jour");
+    setLocationEditing(false);
     router.refresh();
   }
 
@@ -191,6 +231,78 @@ export function AccountView({
                 type="button"
                 onClick={() => setPseudoEditing(true)}
                 aria-label="Modifier le pseudo"
+                className="flex h-7 w-7 items-center justify-center rounded-full border border-card-border text-ink-dim hover:border-orange hover:text-orange"
+              >
+                <PencilIcon />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Localisation */}
+        <div className="mb-4">
+          <label className="mb-1.5 block font-mono text-[11px] tracking-wide text-concrete uppercase">
+            Localisation
+          </label>
+          {locationEditing ? (
+            <div className="flex flex-col gap-2">
+              <input
+                type="text"
+                value={locationDraft}
+                onChange={(e) => setLocationDraft(e.target.value)}
+                placeholder="Ex : Paris, Lyon, Rennes…"
+                autoFocus
+                className={fieldInputClass()}
+              />
+              {isParisDraft && (
+                <select
+                  value={arrondissementDraft}
+                  onChange={(e) => setArrondissementDraft(e.target.value)}
+                  className={fieldInputClass()}
+                >
+                  <option value="">Choisir un arrondissement…</option>
+                  {ARRONDISSEMENTS.map((a) => (
+                    <option key={a.value} value={a.value}>
+                      {a.label}
+                    </option>
+                  ))}
+                </select>
+              )}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={saveLocation}
+                  disabled={locationSaving}
+                  className="rounded-[2px] bg-orange px-3 py-1.5 font-mono text-[11px] font-bold uppercase text-blueprint-deep disabled:opacity-40"
+                >
+                  Enregistrer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLocationDraft(location ?? "");
+                    setArrondissementDraft(arrondissement ?? "");
+                    setLocationEditing(false);
+                  }}
+                  className="rounded-[2px] border border-card-border px-3 py-1.5 font-mono text-[11px] uppercase text-ink-dim"
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <span className="text-[14.5px] text-ink-dim">
+                {location
+                  ? isParisSaved && arrondissement
+                    ? `${location} (${arrondissement}e)`
+                    : location
+                  : "Non renseignée"}
+              </span>
+              <button
+                type="button"
+                onClick={() => setLocationEditing(true)}
+                aria-label="Modifier la localisation"
                 className="flex h-7 w-7 items-center justify-center rounded-full border border-card-border text-ink-dim hover:border-orange hover:text-orange"
               >
                 <PencilIcon />
