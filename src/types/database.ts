@@ -19,10 +19,18 @@ export const CATEGORIES = [
   "Autre",
 ] as const;
 
+export const ARRONDISSEMENTS = Array.from({ length: 20 }, (_, i) => {
+  const n = i + 1;
+  return { value: String(n), label: n === 1 ? "1er" : `${n}e` };
+});
+
 export interface Profile {
   id: string;
   pseudo: string;
   avatar_url: string | null;
+  location: string | null;
+  arrondissement: string | null;
+  phone: string | null;
   created_at: string;
 }
 

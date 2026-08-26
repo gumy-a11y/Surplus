@@ -1,8 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { AddProductForm } from "@/components/add-product-form";
-import { ProductCard } from "@/components/product-card";
-import { StatusButton } from "@/components/status-button";
-import { EmptyState } from "@/components/empty-state";
+import { MesObjetsView } from "@/components/mes-objets-view";
 import type { ProductStatus, ProductType } from "@/types/database";
 
 interface ProductRow {
@@ -42,39 +39,17 @@ export default async function MesObjetsPage() {
     type: p.type,
     status: p.status,
     photo_url: p.photo_url,
+    ownerLabel: "Vous",
     categories: p.product_categories
       .map((pc) => pc.categories?.name)
       .filter((n): n is string => Boolean(n)),
   }));
 
   return (
-    <div>
-      <AddProductForm categories={categories ?? []} userId={user.id} />
-
-      <p className="mb-3.5 font-mono text-[11px] tracking-[0.18em] text-orange uppercase">
-        Mes objets ({mine.length})
-      </p>
-      {mine.length === 0 ? (
-        <EmptyState title="Ton stock est vide">
-          Ajoute ton premier objet avec le formulaire ci-dessus.
-        </EmptyState>
-      ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-4.5">
-          {mine.map((p) => (
-            <ProductCard
-              key={p.id}
-              product={{ ...p, ownerLabel: "Vous" }}
-              actions={
-                <StatusButton
-                  productId={p.id}
-                  type={p.type}
-                  status={p.status}
-                />
-              }
-            />
-          ))}
-        </div>
-      )}
-    </div>
+    <MesObjetsView
+      categories={categories ?? []}
+      userId={user.id}
+      products={mine}
+    />
   );
 }

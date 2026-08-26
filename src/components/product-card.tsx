@@ -1,4 +1,5 @@
 import type { ProductStatus, ProductType } from "@/types/database";
+import { ContactReveal } from "@/components/contact-reveal";
 
 const STATUS_LABEL: Record<ProductStatus, string> = {
   disponible: "Disponible",
@@ -26,15 +27,28 @@ export interface ProductCardData {
   status: ProductStatus;
   photo_url: string | null;
   ownerLabel: string;
+  location?: string | null;
+  arrondissement?: string | null;
+  ownerPhone?: string | null;
 }
 
 export function ProductCard({
   product,
   actions,
+  footer,
+  showContact,
 }: {
   product: ProductCardData;
   actions?: React.ReactNode;
+  footer?: React.ReactNode;
+  showContact?: boolean;
 }) {
+  const locationText = product.location
+    ? product.location.toLowerCase() === "paris" && product.arrondissement
+      ? `Paris (${product.arrondissement}e)`
+      : product.location
+    : null;
+
   return (
     <div className="card-pin relative rounded-[3px] border border-card-border bg-card-bg p-3.5 pb-4 transition-transform hover:-translate-y-[3px] hover:rotate-[-0.4deg] hover:border-orange">
       {product.photo_url ? (
@@ -74,9 +88,15 @@ export function ProductCard({
       )}
 
       <div className="flex items-center justify-between border-t border-dashed border-card-border pt-2 text-[11.5px] text-concrete">
-        <span>{product.ownerLabel}</span>
+        <span>
+          {product.ownerLabel}
+          {locationText ? ` · ${locationText}` : ""}
+        </span>
         {actions}
       </div>
+
+      {footer}
+      {showContact && <ContactReveal phone={product.ownerPhone ?? null} />}
     </div>
   );
 }

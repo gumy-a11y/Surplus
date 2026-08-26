@@ -12,22 +12,44 @@ interface CategoryOption {
   name: string;
 }
 
+export interface EditableProduct {
+  id: string;
+  title: string;
+  description: string | null;
+  type: ProductType;
+  photo_url: string | null;
+  categories: string[];
+}
+
 export function AddProductForm({
   categories,
   userId,
+  editingProduct,
+  onCancel,
+  onSaved,
 }: {
   categories: CategoryOption[];
   userId: string;
+  editingProduct?: EditableProduct | null;
+  onCancel?: () => void;
+  onSaved?: () => void;
 }) {
   const router = useRouter();
   const showToast = useToast();
+  const isEditing = Boolean(editingProduct);
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [type, setType] = useState<ProductType>("don");
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [title, setTitle] = useState(editingProduct?.title ?? "");
+  const [description, setDescription] = useState(
+    editingProduct?.description ?? ""
+  );
+  const [type, setType] = useState<ProductType>(editingProduct?.type ?? "don");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    editingProduct?.categories ?? []
+  );
   const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(
+    editingProduct?.photo_url ?? null
+  );
   const [submitting, setSubmitting] = useState(false);
 
   const categoryOptions = categories.length
@@ -70,8 +92,8 @@ export function AddProductForm({
     setSubmitting(true);
     const supabase = createClient();
 
-    let photoUrl: string | null = null;
     try {
+      let photoUrl: string | null = editingProduct?.photo_url ?? null;
       if (photoFile) {
         const blob = await resizeImage(photoFile);
         const path = `${userId}/${crypto.randomUUID()}.jpg`;
@@ -83,19 +105,42 @@ export function AddProductForm({
           .data.publicUrl;
       }
 
-      const { data: product, error: insertError } = await supabase
-        .from("products")
-        .insert({
-          owner_id: userId,
-          title: title.trim(),
-          description: description.trim() || null,
-          type,
-          status: "disponible",
-          photo_url: photoUrl,
-        })
-        .select("id")
-        .single();
-      if (insertError) throw insertError;
+      let productId: string;
+
+      if (isEditing && editingProduct) {
+        const { error: updateError } = await supabase
+          .from("products")
+          .update({
+            title: title.trim(),
+            description: description.trim() || null,
+            type,
+            photo_url: photoUrl,
+          })
+          .eq("id", editingProduct.id);
+        if (updateError) throw updateError;
+        productId = editingProduct.id;
+
+        const { error: deleteLinksError } = await supabase
+          .from("product_categories")
+          .delete()
+          .eq("product_id", productId);
+        if (deleteLinksError) throw deleteLinksError;
+      } else {
+        const { data: product, error: insertError } = await supabase
+          .from("products")
+          .insert({
+            owner_id: userId,
+            title: title.trim(),
+            description: description.trim() || null,
+            type,
+            status: "disponible",
+            photo_url: photoUrl,
+          })
+          .select("id")
+          .single();
+        if (insertError) throw insertError;
+        productId = product.id;
+      }
 
       const categoryIds = categories
         .filter((c) => selectedCategories.includes(c.name))
@@ -106,16 +151,17 @@ export function AddProductForm({
           .from("product_categories")
           .insert(
             categoryIds.map((category_id) => ({
-              product_id: product.id,
+              product_id: productId,
               category_id,
             }))
           );
         if (linkError) throw linkError;
       }
 
-      showToast("Objet ajouté au catalogue");
+      showToast(isEditing ? "Objet mis à jour" : "Objet ajouté au catalogue");
       resetForm();
       router.refresh();
+      onSaved?.();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erreur inconnue";
       showToast("Erreur : " + message);
@@ -228,13 +274,28 @@ export function AddProductForm({
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={submitting}
-        className="w-full rounded-[2px] bg-orange px-5 py-3 font-mono text-[12.5px] font-bold tracking-wide text-blueprint-deep uppercase disabled:opacity-40"
-      >
-        {submitting ? "Ajout en cours…" : "Ajouter au catalogue"}
-      </button>
+      <div className="flex gap-2.5">
+        <button
+          type="submit"
+          disabled={submitting}
+          className="flex-1 rounded-[2px] bg-orange px-5 py-3 font-mono text-[12.5px] font-bold tracking-wide text-blueprint-deep uppercase disabled:opacity-40"
+        >
+          {submitting
+            ? "Enregistrement…"
+            : isEditing
+              ? "Enregistrer les modifications"
+              : "Ajouter au catalogue"}
+        </button>
+        {isEditing && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-[2px] border border-card-border px-5 py-3 font-mono text-[12.5px] uppercase text-ink-dim"
+          >
+            Annuler
+          </button>
+        )}
+      </div>
     </form>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { ARRONDISSEMENTS } from "@/types/database";
 
 type Mode = "login" | "signup";
 
@@ -12,9 +13,13 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [pseudo, setPseudo] = useState("");
+  const [location, setLocation] = useState("");
+  const [arrondissement, setArrondissement] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const isParis = location.trim().toLowerCase() === "paris";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -25,6 +30,10 @@ export default function LoginPage() {
       setError("Choisis un pseudo pour continuer.");
       return;
     }
+    if (mode === "signup" && !location.trim()) {
+      setError("Indique ta localisation pour continuer.");
+      return;
+    }
 
     setLoading(true);
     const supabase = createClient();
@@ -33,7 +42,13 @@ export default function LoginPage() {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { pseudo: pseudo.trim() } },
+        options: {
+          data: {
+            pseudo: pseudo.trim(),
+            location: location.trim(),
+            arrondissement: isParis && arrondissement ? arrondissement : null,
+          },
+        },
       });
       setLoading(false);
       if (signUpError) {
@@ -137,6 +152,41 @@ export default function LoginPage() {
                 autoFocus
                 className="w-full rounded-[2px] border border-card-border bg-ink/4 px-3 py-2.5 text-[13.5px] text-ink"
               />
+            </div>
+          )}
+
+          {mode === "signup" && (
+            <div className="mb-4">
+              <label className="mb-1.5 block font-mono text-[11px] tracking-wide text-concrete uppercase">
+                Ta localisation
+              </label>
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Ex : Paris, Lyon, Rennes…"
+                className="w-full rounded-[2px] border border-card-border bg-ink/4 px-3 py-2.5 text-[13.5px] text-ink"
+              />
+            </div>
+          )}
+
+          {mode === "signup" && isParis && (
+            <div className="mb-4">
+              <label className="mb-1.5 block font-mono text-[11px] tracking-wide text-concrete uppercase">
+                Arrondissement
+              </label>
+              <select
+                value={arrondissement}
+                onChange={(e) => setArrondissement(e.target.value)}
+                className="w-full rounded-[2px] border border-card-border bg-ink/4 px-3 py-2.5 text-[13.5px] text-ink"
+              >
+                <option value="">Choisir…</option>
+                {ARRONDISSEMENTS.map((a) => (
+                  <option key={a.value} value={a.value}>
+                    {a.label}
+                  </option>
+                ))}
+              </select>
             </div>
           )}
 

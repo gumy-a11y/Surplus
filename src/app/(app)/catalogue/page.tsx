@@ -12,7 +12,12 @@ interface ProductRow {
   photo_url: string | null;
   created_at: string;
   owner_id: string;
-  profiles: { pseudo: string } | null;
+  profiles: {
+    pseudo: string;
+    location: string | null;
+    arrondissement: string | null;
+    phone: string | null;
+  } | null;
   product_categories: { categories: { name: string } | null }[];
 }
 
@@ -42,7 +47,7 @@ export default async function CataloguePage() {
   const { data: products } = await supabase
     .from("products")
     .select(
-      "id, title, description, type, status, photo_url, created_at, owner_id, profiles(pseudo), product_categories(categories(name))"
+      "id, title, description, type, status, photo_url, created_at, owner_id, profiles(pseudo, location, arrondissement, phone), product_categories(categories(name))"
     )
     .in("owner_id", followedIds)
     .order("created_at", { ascending: false })
@@ -57,6 +62,9 @@ export default async function CataloguePage() {
     photo_url: p.photo_url,
     ownerLabel: p.owner_id === user.id ? "Vous" : (p.profiles?.pseudo ?? "?"),
     isMine: p.owner_id === user.id,
+    location: p.profiles?.location ?? null,
+    arrondissement: p.profiles?.arrondissement ?? null,
+    ownerPhone: p.profiles?.phone ?? null,
     categories: p.product_categories
       .map((pc) => pc.categories?.name)
       .filter((n): n is string => Boolean(n)),

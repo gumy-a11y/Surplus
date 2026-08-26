@@ -29,9 +29,30 @@ export default async function AppLayout({
     <ToastProvider>
       <div className="mx-auto w-full max-w-[920px] px-5 pt-7 pb-20">
         {profile ? (
-          <div className="fixed top-4 right-4 z-10 flex items-center gap-2 font-mono text-[11px] text-concrete">
-            Connecté comme <b className="text-ink">{profile.pseudo}</b> ·{" "}
-            <LogoutButton />
+          <div className="fixed top-4 right-4 z-10 flex items-center gap-2.5 font-mono text-[11px] text-concrete">
+            <span>
+              Connecté comme <b className="text-ink">{profile.pseudo}</b>
+            </span>
+            <Link
+              href="/compte"
+              title="Mon compte"
+              aria-label="Mon compte"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-card-border bg-card-bg text-ink-dim hover:border-orange hover:text-orange"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" />
+              </svg>
+            </Link>
           </div>
         ) : null}
 

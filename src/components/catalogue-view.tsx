@@ -15,6 +15,9 @@ export interface CatalogueItem {
   photo_url: string | null;
   ownerLabel: string;
   isMine: boolean;
+  location: string | null;
+  arrondissement: string | null;
+  ownerPhone: string | null;
   categories: string[];
 }
 
@@ -93,6 +96,7 @@ export function CatalogueView({ items }: { items: CatalogueItem[] }) {
             <ProductCard
               key={p.id}
               product={p}
+              showContact={!p.isMine}
               actions={
                 p.isMine ? (
                   <StatusButton

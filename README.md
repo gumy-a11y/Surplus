@@ -8,10 +8,11 @@ Vercel**.
 
 ## Écrans
 
-- `/login` — inscription (email, mot de passe, pseudo) et connexion
-- `/catalogue` — objets des personnes suivies, filtres type / catégorie / recherche
-- `/mes-objets` — formulaire d'ajout (photo, catégories, don ou prêt, description) + mes objets
-- `/abonnements` — liste des contributeurs, suivre / ne plus suivre
+- `/login` — inscription (email, mot de passe, pseudo, localisation) et connexion
+- `/catalogue` — objets des personnes suivies, filtres type / catégorie / recherche, bouton « Contacter »
+- `/mes-objets` — catalogue personnel direct, bouton « Publier un nouvel objet », modification et suppression de ses annonces
+- `/abonnements` — annuaire des comptes inscrits, avec recherche, s'abonner / se désabonner
+- `/compte` — pseudo et téléphone modifiables, changement de mot de passe, suppression du compte
 - Chaque objet prêté ou donné a un bouton pour changer son statut (disponible → emprunté → disponible, ou → donné)
 
 ## 1. Créer le projet Supabase
@@ -20,27 +21,35 @@ Vercel**.
 2. Dans **Project Settings → API**, récupère :
    - `Project URL`
    - la clé `anon public`
+   - la clé `service_role` — **secrète**, ne jamais la mettre dans une variable préfixée `NEXT_PUBLIC_`, ne jamais la commiter
 3. Crée un fichier `.env.local` à la racine (à partir de `.env.local.example`) :
 
    ```bash
    cp .env.local.example .env.local
    ```
 
-   et colle-y ces deux valeurs :
+   et colle-y ces trois valeurs :
 
    ```
    NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
    NEXT_PUBLIC_SUPABASE_ANON_KEY=xxxxx
+   SUPABASE_SERVICE_ROLE_KEY=xxxxx
    ```
+
+   La clé `service_role` n'est utilisée que côté serveur, par la route
+   `src/app/api/account/delete/route.ts` qui gère la suppression de
+   compte (elle seule peut supprimer une ligne `auth.users`, RLS ne le
+   permet à personne d'autre).
 
 ## 2. Exécuter le SQL
 
-Dans le **SQL Editor** de Supabase, exécute ces 4 fichiers **dans cet ordre exact** :
+Dans le **SQL Editor** de Supabase, exécute ces 5 fichiers **dans cet ordre exact** :
 
 1. `supabase/schema.sql` — le schéma que tu as fourni (tables, catégories, RLS). Non modifié.
 2. `supabase/profile_trigger.sql` — **ajout nécessaire** : `schema.sql` ne contient pas de règle RLS permettant à un nouvel utilisateur de créer sa propre ligne dans `profiles`. Ce fichier ajoute un trigger qui crée automatiquement le profil (pseudo compris) dès l'inscription, sans toucher aux tables existantes. Signale-moi si tu préfères une autre approche.
 3. `supabase/storage_setup.sql` — **ajout nécessaire** : crée le bucket de stockage public `product-photos` (mentionné mais non créé par `schema.sql`, car un bucket n'est pas un objet SQL classique) et ses règles d'accès (lecture publique, écriture limitée à son propre dossier).
 4. `supabase/grants.sql` — **ajout nécessaire** : `schema.sql` active RLS et définit des policies, mais n'accorde pas les droits SQL de base (`GRANT`) sans lesquels Postgres refuse l'accès avant même d'évaluer ces policies. Sur un projet créé via l'éditeur de tables Supabase, ces droits sont posés automatiquement ; ils manquent quand les tables sont créées par SQL direct, comme ici. Sans ce fichier, l'app affiche `permission denied for table profiles` (ou une autre table) après connexion.
+5. `supabase/profile_extra_fields.sql` — **ajout nécessaire** : ajoute les colonnes `location`, `arrondissement` et `phone` à `profiles` (utilisées par l'inscription, les annonces et « Mon compte »), et met à jour le trigger de `profile_trigger.sql` pour qu'il récupère la localisation saisie à l'inscription.
 
 ## 3. Authentification
 
@@ -67,8 +76,11 @@ Ouvre [http://localhost:3000](http://localhost:3000) — tu seras redirigé vers
 
 1. Pousse ce dépôt sur GitHub (déjà fait si tu lis ceci depuis la branche de travail).
 2. Sur [vercel.com](https://vercel.com), importe le dépôt.
-3. Ajoute les deux variables d'environnement (`NEXT_PUBLIC_SUPABASE_URL`,
-   `NEXT_PUBLIC_SUPABASE_ANON_KEY`) dans les réglages du projet Vercel.
+3. Ajoute les trois variables d'environnement (`NEXT_PUBLIC_SUPABASE_URL`,
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) dans les
+   réglages du projet Vercel. Sans la troisième, tout fonctionne sauf la
+   suppression de compte depuis « Mon compte », qui échoue proprement avec
+   un message d'erreur explicite plutôt que de planter.
 4. Déploie.
 
 ## Notes techniques
