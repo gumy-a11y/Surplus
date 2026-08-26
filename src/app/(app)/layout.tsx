@@ -57,7 +57,7 @@ export default async function AppLayout({
         ) : null}
 
         <p className="mb-1.5 font-mono text-[11px] tracking-[0.18em] text-orange uppercase">
-          Chantier partagé entre proches
+          &nbsp;
         </p>
         <h1 className="mb-1 font-display text-[clamp(42px,9vw,64px)] leading-[0.95] tracking-wide">
           LE SUR<span className="text-orange">PLUS</span>
