@@ -130,10 +130,15 @@ export default function LoginPage() {
             </p>
             <p className="mb-1">
               1) Vous n&apos;êtes pas dans l&apos;obligation d&apos;entrer une
-              adresse mail réelle : protégez vos données !
+              adresse mail réelle. L&apos;adresse que vous entrez a valeur
+              d&apos;identifiant, souvenez-vous en !
+            </p>
+            <p className="mb-1">
+              2) Choisissez un pseudo qui permette de vous identifier 😉
             </p>
             <p className="mb-0">
-              2) Choisissez un pseudo qui permette de vous identifier 😉
+              3) Complétez votre profil plus tard dans la rubrique « Mon
+              compte »
             </p>
           </div>
         )}
