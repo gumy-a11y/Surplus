@@ -83,11 +83,28 @@ Ouvre [http://localhost:3000](http://localhost:3000) — tu seras redirigé vers
    un message d'erreur explicite plutôt que de planter.
 4. Déploie.
 
+## Installer l'app sur un téléphone
+
+Le site est une PWA (Progressive Web App) : sur mobile, il peut s'installer
+comme une vraie app, avec icône et lancement plein écran, sans passer par
+l'App Store ou le Play Store.
+
+- **Android (Chrome)** : menu **⋮** → **Installer l'application** (ou une
+  bannière d'installation apparaît automatiquement).
+- **iPhone (Safari)** : bouton de partage **⎋** → **Sur l'écran d'accueil**.
+
+Rien à faire côté serveur au-delà de ce qui est déjà déployé : le manifeste
+(`src/app/manifest.ts`) et les icônes (`public/icon-*.png`) sont servis
+avec le reste du site.
+
 ## Notes techniques
 
 - Ce projet utilise Next.js 16, qui a renommé le fichier `middleware.ts` en
   `proxy.ts` (voir `src/proxy.ts`) — c'est ce fichier qui protège les pages
-  et redirige vers `/login` si tu n'es pas connecté.
+  et redirige vers `/login` si tu n'es pas connecté. Son filtre (`matcher`)
+  exclut explicitement `manifest.webmanifest` et les images : sans ça, le
+  proxy redirige aussi ces fichiers publics vers `/login`, et le
+  navigateur ne peut plus proposer l'installation de l'app.
 - Le filtrage du catalogue (type, catégorie, recherche) se fait côté client
   après récupération des objets des personnes suivies, comme dans le
   prototype fourni.
